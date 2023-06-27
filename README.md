@@ -4,7 +4,7 @@
 Just a scraper for video content
 
 ## Supported Sites
-  [aCloudGuru](https://acloud.guru)
+-  [aCloudGuru](https://acloud.guru)
 
 
 
@@ -16,12 +16,12 @@ Just a scraper for video content
 5. run `mv sky-scraper sky`
 
 ## Status
-- [x] aCloudGuru
+- [ ] aCloudGuru
   - ✅ Supports Video Download
   - ✅ Supports Material Download
   - [ ] Supports Lab Download
   - [ ] Supports Quiz Download
-
+- [ ] Pluralsight
 
 ## Usage
 
