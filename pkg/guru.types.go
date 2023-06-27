@@ -29,12 +29,13 @@ type GuruComponentType struct {
 	Title string `json:"title"`
 	Sequence int `json:"sequence"`
 	Content GuruContentType `json:"content"`
+	Resources []GuruResourcesType `json:"resources"`
 }
 
 type GuruContentType struct {
-	Title string `json:"title"`
 	Sequence int `json:"sequence"`
 	Videosources []GuruVideoSourcesType `json:"videosources"`
+	Type string `json:"type"`
 }
 
 type GuruVideoSourcesType struct {
@@ -42,3 +43,8 @@ type GuruVideoSourcesType struct {
 	SignedUrl string `json:"signedUrl"`
 }
 
+
+type GuruResourcesType struct {
+	Title string `json:"title"`
+	Url string `json:"url"`
+}

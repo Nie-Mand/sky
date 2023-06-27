@@ -15,6 +15,14 @@ Just a scraper for video content
 4. run `go build .`
 5. run `mv sky-scraper sky`
 
+## Status
+- [x] aCloudGuru
+  - ✅ Supports Video Download
+  - ✅ Supports Material Download
+  - [ ] Supports Lab Download
+  - [ ] Supports Quiz Download
+
+
 ## Usage
 
 ```bash

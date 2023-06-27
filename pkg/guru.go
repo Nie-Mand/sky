@@ -5,14 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/schollz/progressbar/v3"
+)
+
+const (
+	GURU_CDN = "https://acloudguru-content-attachment-production.s3-accelerate.amazonaws.com"
 )
 
 type ACloudGuruScraper struct {
 	http utils.HttpClient
 }
-
 
 var Guru = ACloudGuruScraper{}
 
@@ -24,13 +28,12 @@ func (guru *ACloudGuruScraper) Init() {
 	}
 
 	apiUrl := "https://prod-api.acloud.guru/bff/graphql"
-	
+
 	guru.http.Init(apiUrl, map[string]string{
 		"Authorization": "Bearer " + token,
 	})
 	log.Printf("Initiated CloudGuru Scraper, API url ~ %s", apiUrl)
 }
-
 
 func (guru *ACloudGuruScraper) GetCourseContent(courseId string, quality string) {
 	guru.Init()
@@ -41,8 +44,8 @@ func (guru *ACloudGuruScraper) GetCourseContent(courseId string, quality string)
 		log.Printf("There was an error while creating the folder: %s", err)
 	}
 
-	gqlQuery := GuruGetCourseContent	
-	
+	gqlQuery := GuruGetCourseContent
+
 	variables := map[string]string{
 		"courseId": courseId,
 	}
@@ -61,7 +64,7 @@ func (guru *ACloudGuruScraper) GetCourseContent(courseId string, quality string)
 	var result GuruGetCourseContentResponse
 
 	err = json.Unmarshal([]byte(response), &result)
-	
+
 	if err != nil {
 		log.Printf("There was an error while parsing the response: %s", err)
 		return
@@ -83,8 +86,8 @@ func (guru *ACloudGuruScraper) GetCourseContent(courseId string, quality string)
 
 		readme := makeGuruReadMe(result)
 
-		err = utils.Write("downloads/ACloudGuru/" + courseId + "/README.md", []byte(readme)) 
-	
+		err = utils.Write("downloads/ACloudGuru/"+courseId+"/README.md", []byte(readme))
+
 		if err != nil {
 			log.Printf("There was an error while writing the README.md file: %s", err)
 			return
@@ -98,7 +101,7 @@ func (guru *ACloudGuruScraper) GetCourseContent(courseId string, quality string)
 
 	for _, section := range result.Data.UserCourseOverview.CourseOverview.Sections {
 		// log.Printf("Downloading section: %s", section.Title)
-		sectionFolder := utils.MakeSectionFolder(section.Sequence + 1, section.Title)
+		sectionFolder := utils.MakeSectionFolder(section.Sequence+1, section.Title)
 
 		err = utils.Mkdir("downloads/ACloudGuru/" + courseId + "/" + sectionFolder)
 
@@ -106,48 +109,55 @@ func (guru *ACloudGuruScraper) GetCourseContent(courseId string, quality string)
 			log.Printf("There was an error while creating the folder: %s", err)
 		}
 
-
 		for _, lesson := range section.Components {
+			// Get resources
+			resourcesUrl := "downloads/ACloudGuru/" + courseId + "/" + sectionFolder + "/"
+			resourcesUrl += fmt.Sprintf("%02d", lesson.Sequence+1) + " - "
+			resourcesUrl += lesson.Title
+			guru.GetResourcesFromLesson(resourcesUrl, lesson.Resources)
+
+
+
 			bar.Describe(fmt.Sprintf("Downloading lesson: %s", lesson.Title))
-			
-			videoFileName := utils.MakeVideoName(lesson.Sequence + 1, lesson.Title)
-			if utils.Exist("downloads/ACloudGuru/" + courseId + "/" + sectionFolder + "/" + videoFileName) {
-				// log.Printf("Video of lesson %s already exists, skipping...", lesson.Title)
-				bar.Add(1)
-				continue
+
+			if lesson.Content.Type == "video" {
+				videoFileName := utils.MakeVideoName(lesson.Sequence+1, lesson.Title)
+				if utils.Exist("downloads/ACloudGuru/" + courseId + "/" + sectionFolder + "/" + videoFileName) {
+					// log.Printf("Video of lesson %s already exists, skipping...", lesson.Title)
+					bar.Add(1)
+					continue
+				}
+
+				url, err := getUrl(lesson.Content.Videosources, quality)
+
+				if err != nil {
+					log.Printf("There was an error while getting the url for the lesson %s: %s", lesson.Title, err)
+					continue
+				}
+
+				video, err := guru.http.Download(url)
+				if err != nil {
+					log.Printf("There was an error while downloading the video: %s", err)
+					return
+					// continue
+				}
+
+				err = utils.Write("downloads/ACloudGuru/"+courseId+"/"+sectionFolder+"/"+videoFileName, video)
+
+				if err != nil {
+					log.Printf("There was an error while writing the video file: %s", err)
+					continue
+				}
+
+			} else {
+				// log.Printf("Skipping lesson %s, type %s", lesson.Title, lesson.Content.Type)
 			}
-
-
-			url, err := getUrl(lesson.Content.Videosources, quality)
-
-			if err != nil {
-				log.Printf("There was an error while getting the url for the lesson %s: %s", lesson.Title, err)
-				continue
-			}
-			
-			video, err := guru.http.Download(url)
-			if err != nil {
-				log.Printf("There was an error while downloading the video: %s", err)
-				return
-				// continue
-			}
-
-			err = utils.Write("downloads/ACloudGuru/" + courseId + "/" + sectionFolder + "/" + videoFileName, video)
-
-			if err != nil {
-				log.Printf("There was an error while writing the video file: %s", err)
-				continue
-			}
-
 			bar.Add(1)
+
 		}
 	}
 
 }
-
-
-
-
 
 func getUrl(sources []GuruVideoSourcesType, quality string) (string, error) {
 	for _, source := range sources {
@@ -169,11 +179,11 @@ func makeGuruReadMe(result GuruGetCourseContentResponse) string {
 	readme += "## Sections\n\n"
 
 	for _, section := range result.Data.UserCourseOverview.CourseOverview.Sections {
-		seq := fmt.Sprintf("%d", section.Sequence + 1)
+		seq := fmt.Sprintf("%d", section.Sequence+1)
 		readme += seq + ". " + section.Title + "\n"
 
 		for _, lesson := range section.Components {
-			readme += "   - " + lesson.Title + "\n"
+			readme += "   - " + lesson.Title + " ( " + lesson.Content.Type + " )\n"
 		}
 	}
 
@@ -187,4 +197,35 @@ func getHowManyLessons(sections []GuruSectionType) int {
 	}
 
 	return lessons
+}
+
+func (guru *ACloudGuruScraper) GetResourcesFromLesson(
+	path string,
+	ressources []GuruResourcesType,
+) {
+	if len(ressources) == 0 {
+		return
+	}
+
+	resourcesContent := "# Resources\n\n"
+
+	for _, resource := range ressources {
+		if strings.HasPrefix(resource.Url, GURU_CDN) {
+			content, err := guru.http.Download(resource.Url)
+			fileName := strings.Split(resource.Url, "/")
+			fileName = strings.Split(fileName[len(fileName)-1], "?")
+
+			if err != nil {
+				log.Printf("There was an error while downloading the resource: %s", err)
+				continue
+			}
+
+			err = utils.Write(path+" - "+fileName[0], content)
+
+		}
+
+		resourcesContent += fmt.Sprintf("- [%s](%s)\n", resource.Title, resource.Url)
+	}
+
+	utils.Write(path+" - resources.md", []byte(resourcesContent))
 }

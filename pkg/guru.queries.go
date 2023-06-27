@@ -19,9 +19,16 @@ query Course_userCourseOverview($courseId: String!) {
 	id
 	title
 	sequence
+
+	resources {
+		title
+		url
+	}
   
 	content {
 	  ... on VideoCourseComponentContent {
+		type
+		
 		videosources(filter: { videoType: "video/mp4" }) {
 		  signedUrl
 		  quality
