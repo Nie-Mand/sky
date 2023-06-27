@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -24,7 +24,7 @@ func Mkdir(path string) error {
 		}
 	}
 
-	log.Printf("Created folder: %s", path)
+	// log.Printf("Created folder: %s", path)
 	return nil
 }
 
@@ -47,4 +47,14 @@ func Exist(path string) (bool) {
 	} else {
 		return true
 	}
+}
+
+func MakeVideoName(section int, title string) string {
+	sectionString := fmt.Sprintf("%02d", section)
+	return sectionString + " - " + title + ".mp4"
+}
+
+func MakeSectionFolder(section int, title string) string {
+	sectionString := fmt.Sprintf("%02d", section)
+	return sectionString + " - " + title
 }

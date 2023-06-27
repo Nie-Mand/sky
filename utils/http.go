@@ -1,4 +1,4 @@
-package pkg
+package utils
 
 import (
 	"bytes"
@@ -31,6 +31,20 @@ func (c *HttpClient) Get(url string) (string, error) {
 	}
 
 	return string(body), nil
+}
+
+func (c *HttpClient) Download(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return []byte(""), err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return []byte(""), nil
+	}
+
+	return body, nil
 }
 
 func (c *HttpClient) Post(url string, data map[string]interface{}) (string, error) {
