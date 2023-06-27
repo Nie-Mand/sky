@@ -12,6 +12,19 @@ Just a scraper for video content
 1. Install [Go](https://golang.org/)
 2. Add the environment variable for token
 3. Install Dependencies with `go mod tidy`
-4. run `go build -o sky .`
+4. run `go build .`
+5. run `mv sky-scraper sky`
 
 ## Usage
+
+```bash
+Download a course from a learning platform.
+
+Usage:
+  sky get [course ID] [flags]
+
+Flags:
+  -g, --guru             Set the provider as a Cloud Guru
+  -h, --help             help for get
+  -q, --quality string   Set the Quality of the video to download (default "720p")
+```
