@@ -1,4 +1,4 @@
-# Sky-Scrapper
+# Sky, the Scraper
 
 ## Description
 Just a scraper for video content

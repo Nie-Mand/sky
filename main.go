@@ -1,11 +1,9 @@
 package main
 
 import (
-	"Nie-Mand/sky-scraper/pkg"
-	"Nie-Mand/sky-scraper/utils"
+	"Nie-Mand/sky-scraper/cmd"
 )
 
 func main() {
-	token := utils.GetToken("TOKEN")
-	pkg.Guru.Init(token)
+	cmd.Execute()
 }
