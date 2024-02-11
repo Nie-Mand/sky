@@ -14,6 +14,7 @@ import (
 func init() {
   RootCmd.AddCommand(getCmd)
   getCmd.Flags().BoolP("guru", "g", false, "Set the provider as a Cloud Guru")
+  getCmd.Flags().BoolP("pluralsight", "p", false, "Set the provider as Pluralsight")
   getCmd.Flags().StringP("quality", "q", "720p", "Set the Quality of the video to download")
 }
 
@@ -43,6 +44,9 @@ var getCmd = &cobra.Command{
 
 	if provider == "guru" {
 		pkg.Guru.GetCourseContent(courseId, quality)
+		return
+	} else if provider == "pluralsight" {
+		// pkg.Pluralsight.GetCourseContent(courseId, quality)
 		return
 	}
 

@@ -3,6 +3,8 @@ module Nie-Mand/sky-scraper
 go 1.20
 
 require (
+	github.com/canhlinh/hlsdl v0.0.0-20230412042136-7c990fdd2b7b // indirect
+	github.com/grafov/m3u8 v0.11.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
@@ -13,4 +15,5 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/sys v0.9.0 // indirect
 	golang.org/x/term v0.9.0 // indirect
+	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 )
